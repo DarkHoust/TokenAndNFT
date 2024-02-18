@@ -1,33 +1,27 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
 const hre = require("hardhat");
+require("dotenv").config({ path: ".env" });
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  const metadataURL = "ipfs://QmRda2F6W5Uw6N6MYcZa89W7zNccw5w37AK6DiAVPrLqtE";
+  /*
+  DeployContract in ethers.js is an abstraction used to deploy new smart contracts,
+  so Contract here is a factory for instances of our contract.
+  */
+  // here we deploy the contract
+  const Contract = await hre.ethers.deployContract("FindingParadise", [
+    "0x20D1B6969710ECADe438C3B28B8a6b150fa11A7f"
+  ]);
 
-  const lockedAmount = hre.ethers.parseEther("0.001");
+  await Contract.waitForDeployment();
 
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
-
-  await lock.waitForDeployment();
-
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+ // print the address of the deployed contract
+  console.log("Contract Address:", Contract.target);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+// Call the main function and catch if there is any error
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
